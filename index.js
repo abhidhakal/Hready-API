@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const logger = require('./middleware/logger');
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
@@ -21,6 +22,7 @@ connectDB();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(logger);
 
 // Public route (Login/Register)
 app.use('/api/auth', authRoutes);
