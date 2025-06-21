@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Employee = require('../models/Employee');
+const bcrypt = require('bcryptjs');
 
 const generateToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
@@ -36,4 +38,25 @@ const login = async (req, res) => {
   });
 };
 
-module.exports = { register, login };
+const employeeLogin = async (req, res) => {
+  const { email, password } = req.body;
+
+  const employee = await Employee.findOne({ email });
+  if (!employee) return res.status(400).json({ message: 'Employee not found' });
+
+  const isMatch = await bcrypt.compare(password, employee.password);
+  if (!isMatch) return res.status(401).json({ message: 'Invalid credentials' });
+
+  const token = generateToken({ _id: employee._id, role: 'employee' });
+
+  res.status(200).json({
+    token,
+    user: {
+      id: employee._id,
+      name: employee.name,
+      role: 'employee'
+    }
+  });
+};
+
+module.exports = { register, login, employeeLogin };
