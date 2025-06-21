@@ -9,6 +9,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 // Import JWT middleware
 const { protect, adminOnly } = require('./middleware/authMiddleware');
@@ -32,7 +33,8 @@ app.use('/api/auth', authRoutes);
 // Protected routes — these require valid JWT
 app.use('/api/users', userRoutes);
 
-// employee route
+// admin and employee route
+app.use('/api/admins', adminRoutes);
 app.use('/api/employees', employeeRoutes)
 
 // announcements route
