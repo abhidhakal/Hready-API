@@ -8,6 +8,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
+const announcementRoutes = require('./routes/announcementRoutes');
 
 // Import JWT middleware
 const { protect, adminOnly } = require('./middleware/authMiddleware');
@@ -33,6 +34,9 @@ app.use('/api/users', userRoutes);
 
 // employee route
 app.use('/api/employees', employeeRoutes)
+
+// announcements route
+app.use('/api/announcements', announcementRoutes);
 
 // Example protected admin route (optional demo)
 app.get('/api/admin/dashboard', protect, adminOnly, (req, res) => {
