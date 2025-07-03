@@ -6,4 +6,6 @@ const { getAdminById } = require('../controllers/adminController');
 // Get admin by ID
 router.get('/:id', protect, adminOnly, getAdminById);
 
+router.get('/', protect, adminOnly, getAllUsers);
+
 module.exports = router;
