@@ -6,7 +6,6 @@ const logger = require('./middleware/logger');
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -30,9 +29,6 @@ app.use(logger);
 
 // Public route (Login/Register)
 app.use('/api/auth', authRoutes);
-
-// Protected routes — these require valid JWT
-app.use('/api/users', userRoutes);
 
 // admin and employee route
 app.use('/api/admins', adminRoutes);
