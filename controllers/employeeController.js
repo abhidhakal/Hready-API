@@ -23,16 +23,24 @@ const createEmployee = async (req, res) => {
     }
 };
 
-// get single employee by ID
+// get employee by ID
 const getEmployeeById = async (req, res) => {
-    try {
-        const employee = await Employee.findById(req.params.id);
-        if (!employee) return res.status(404).json({ message: 'Employee not found' });
-
-        res.status(200).json(employee);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+  try {
+    // If user is employee and requesting someone else's profile -> forbidden
+    if (req.user.role === 'employee' && req.user.id !== req.params.id) {
+      return res.status(403).json({ message: 'Access denied.' });
     }
+
+    const employee = await Employee.findById(req.params.id);
+
+    if (!employee) {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    res.json(employee);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 

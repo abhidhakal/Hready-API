@@ -10,6 +10,7 @@ const userRoutes = require('./routes/userRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
 
 // Import JWT middleware
 const { protect, adminOnly } = require('./middleware/authMiddleware');
@@ -40,7 +41,10 @@ app.use('/api/employees', employeeRoutes)
 // announcements route
 app.use('/api/announcements', announcementRoutes);
 
-// Example protected admin route (optional demo)
+// attendance route
+app.use('/api/attendance', attendanceRoutes);
+
+// Example protected admin route
 app.get('/api/admin/dashboard', protect, adminOnly, (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied: Admins only' });
