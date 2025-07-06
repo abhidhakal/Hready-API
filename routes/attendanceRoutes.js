@@ -7,7 +7,8 @@ const {
   getMonthlySummary,
   sendReminder,
   getTodayAttendance,
-  getMyAttendance
+  getMyAttendance,
+  getAllAttendance
 } = require('../controllers/attendanceController');
 
 router.post('/checkin', protect, checkIn);
@@ -16,5 +17,6 @@ router.get('/summary', protect, getMonthlySummary);
 router.post('/reminders', protect, sendReminder);
 router.get('/me', protect, getTodayAttendance);
 router.get('/', protect, getMyAttendance);
+router.get('/all', protect, getAllAttendance);
 
 module.exports = router;

@@ -1,10 +1,10 @@
 const Attendance = require('../models/Attendance');
-// const LeaveRequest = require('../models/LeaveRequest');
 
+// Get today's attendance for logged-in employee
 const getTodayAttendance = async (req, res) => {
   try {
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
 
     const record = await Attendance.findOne({
       employeeId: req.user.id,
@@ -21,24 +21,47 @@ const getTodayAttendance = async (req, res) => {
   }
 };
 
+// Get all attendance for logged-in employee
 const getMyAttendance = async (req, res) => {
   try {
     const records = await Attendance.find({
       employeeId: req.user.id
-    }).sort({ date: -1 }); // most recent first
+    }).sort({ date: -1 });
     res.json(records);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
+// Get all attendance records for admin
+const getAllAttendance = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
 
-// Checkin
+    const records = await Attendance.find()
+      .populate({
+        path: 'employeeId',
+        populate: {
+          path: 'userId',
+          select: 'name email'
+        }
+      })
+      .sort({ date: -1 });
+
+    res.json(records);
+  } catch (err) {
+    console.error('Error fetching all attendance:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Employee check-in
 const checkIn = async (req, res) => {
   const date = req.body.date ? new Date(req.body.date) : new Date();
-  date.setHours(0,0,0,0);
+  date.setHours(0, 0, 0, 0);
   try {
-    // Prevent duplicate checkins
     const existing = await Attendance.findOne({ employeeId: req.user.id, date });
     if (existing) {
       return res.status(400).json({ message: 'Already checked in for this date.' });
@@ -58,10 +81,10 @@ const checkIn = async (req, res) => {
   }
 };
 
-// Checkout
+// Employee check-out
 const checkOut = async (req, res) => {
   const date = req.body.date ? new Date(req.body.date) : new Date();
-  date.setHours(0,0,0,0);
+  date.setHours(0, 0, 0, 0);
   try {
     const record = await Attendance.findOne({
       employeeId: req.user.id,
@@ -84,7 +107,7 @@ const checkOut = async (req, res) => {
   }
 };
 
-// Monthly Summary
+// Employee monthly summary
 const getMonthlySummary = async (req, res) => {
   const { month, year } = req.query;
   const start = new Date(year, month - 1, 1);
@@ -109,17 +132,17 @@ const getMonthlySummary = async (req, res) => {
   }
 };
 
-// Smart Reminder API placeholder
+// Smart reminder (placeholder)
 const sendReminder = async (req, res) => {
-  // Later: implement email/notifications
   res.json({ message: 'Reminder logic not implemented yet.' });
 };
 
 module.exports = {
-    getTodayAttendance,
-    checkIn,
-    checkOut,
-    getMonthlySummary,
-    sendReminder,
-    getMyAttendance
+  getTodayAttendance,
+  checkIn,
+  checkOut,
+  getMonthlySummary,
+  sendReminder,
+  getMyAttendance,
+  getAllAttendance
 };
