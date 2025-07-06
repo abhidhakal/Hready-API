@@ -10,7 +10,7 @@ const getAllEmployees = async (req, res) => {
   }
 };
 
-// Create employee
+// Create employee (by admin)
 const createEmployee = async (req, res) => {
   const {
     name,
@@ -48,7 +48,54 @@ const createEmployee = async (req, res) => {
   }
 };
 
-// Update employee
+// Get logged-in employee profile
+const getMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'Employee not found' });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Change password
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'Employee not found' });
+
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Upload profile picture
+const uploadProfilePicture = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'Employee not found' });
+
+    user.profilePicture = req.body.profilePicture;
+    await user.save();
+
+    res.json({ message: 'Profile picture updated successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update employee (by admin)
 const updateEmployee = async (req, res) => {
   try {
     const updated = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -59,7 +106,7 @@ const updateEmployee = async (req, res) => {
   }
 };
 
-// Delete employee
+// Delete employee (by admin)
 const deleteEmployee = async (req, res) => {
   try {
     const deleted = await User.findByIdAndDelete(req.params.id);
@@ -73,6 +120,9 @@ const deleteEmployee = async (req, res) => {
 module.exports = {
   getAllEmployees,
   createEmployee,
+  getMyProfile,
+  changePassword,
+  uploadProfilePicture,
   updateEmployee,
   deleteEmployee
 };
