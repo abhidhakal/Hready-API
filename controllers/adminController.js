@@ -1,24 +1,96 @@
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 
+// Get admin by ID
 const getAdminById = async (req, res) => {
   try {
     const admin = await User.findById(req.params.id);
     if (!admin || admin.role !== 'admin') {
       return res.status(404).json({ message: 'Admin not found' });
     }
-    res.json({ name: admin.name, email: admin.email, role: admin.role });
+    res.json({
+      name: admin.name,
+      email: admin.email,
+      contactNo: admin.contactNo || '',
+      profilePicture: admin.profilePicture || '',
+      role: admin.role
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
+// Get logged-in admin profile
+const getMyProfile = async (req, res) => {
+  try {
+    const admin = await User.findById(req.user.id).select('-password');
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+    res.json(admin);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update logged-in admin profile
+const updateMyProfile = async (req, res) => {
+  try {
+    const admin = await User.findById(req.user.id);
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    admin.name = req.body.name || admin.name;
+    admin.email = req.body.email || admin.email;
+    admin.contactNo = req.body.contactNo || admin.contactNo;
+    admin.profilePicture = req.body.profilePicture || admin.profilePicture;
+
+    await admin.save();
+    res.json({ message: 'Profile updated successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Change password
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  try {
+    const admin = await User.findById(req.user.id);
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    const isMatch = await admin.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    admin.password = newPassword; // will be hashed by pre-save hook
+    await admin.save();
+
+    res.json({ message: 'Password changed successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get all users
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password'); // Exclude password field
+    const users = await User.find().select('-password');
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 };
 
-module.exports = { getAdminById, getAllUsers };
+module.exports = {
+  getAdminById,
+  getMyProfile,
+  updateMyProfile,
+  changePassword,
+  getAllUsers
+};
