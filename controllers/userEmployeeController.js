@@ -1,14 +1,15 @@
 const User = require('../models/User');
 
 // Get all employees
-const getAllEmployees = async (req, res) => {
+exports.getAllEmployees = async (req, res) => {
   try {
-    const employees = await User.find({ role: 'employee' }).sort({ createdAt: -1 });
+    const employees = await Employee.find().populate('userId', 'name email department');
     res.json(employees);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching employees', error: error.message });
   }
 };
+
 
 // Create employee (by admin)
 const createEmployee = async (req, res) => {

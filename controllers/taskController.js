@@ -3,22 +3,35 @@ const Employee = require('../models/Employee');
 
 exports.createTask = async (req, res) => {
   try {
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
     const { title, description, dueDate, assignedTo, assignedDepartment, status } = req.body;
 
+    // Validate assignedTo
     let assignedEmployee = null;
     if (assignedTo) {
       assignedEmployee = await Employee.findById(assignedTo);
       if (!assignedEmployee) {
-        return res.status(400).json({ message: "Assigned employee not found." });
+        return res.status(400).json({ message: 'Assigned employee not found.' });
       }
+    }
+
+    // Ensure only one assignment
+    let finalAssignedTo = assignedEmployee ? assignedEmployee._id : null;
+    let finalAssignedDepartment = assignedDepartment || null;
+
+    if (finalAssignedTo && finalAssignedDepartment) {
+      finalAssignedDepartment = null;
     }
 
     const task = new Task({
       title,
       description,
-      dueDate,
-      assignedTo: assignedEmployee ? assignedEmployee._id : null,
-      assignedDepartment: assignedDepartment || null,
+      dueDate: dueDate ? new Date(dueDate) : null,
+      assignedTo: finalAssignedTo,
+      assignedDepartment: finalAssignedDepartment,
       status: status || 'pending',
       createdBy: req.user._id
     });
@@ -30,7 +43,6 @@ exports.createTask = async (req, res) => {
     res.status(500).json({ message: 'Error creating task', error: error.message });
   }
 };
-
 
 // Get all tasks
 exports.getTasks = async (req, res) => {
