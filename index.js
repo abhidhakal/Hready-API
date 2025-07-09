@@ -10,6 +10,8 @@ const employeeRoutes = require('./routes/employeeRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+
 
 // Import JWT middleware
 const { protect, adminOnly } = require('./middleware/authMiddleware');
@@ -39,6 +41,9 @@ app.use('/api/announcements', announcementRoutes);
 
 // attendance route
 app.use('/api/attendance', attendanceRoutes);
+
+// task route
+app.use('/api/tasks', taskRoutes);
 
 // Example protected admin route
 app.get('/api/admin/dashboard', protect, adminOnly, (req, res) => {
