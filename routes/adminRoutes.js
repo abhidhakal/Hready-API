@@ -33,10 +33,10 @@ router.put(
 // Change password
 router.put('/change-password', protect, adminOnly, changePassword);
 
+// Get all users
+router.get('/', protect, adminOnly, getAllUsers);
+
 // Get specific admin by ID
 router.get('/:id', protect, adminOnly, getAdminById);
-
-// Get all users (if needed)
-router.get('/', protect, adminOnly, getAllUsers);
 
 module.exports = router;

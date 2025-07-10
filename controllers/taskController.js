@@ -1,7 +1,7 @@
 const Task = require('../models/Task');
-const Employee = require('../models/Employee');
+const User = require('../models/User');
 
-const createTask = async (req, res) => {
+exports.createTask = async (req, res) => {
   try {
     const { title, description, dueDate, assignedTo, assignedDepartment, status } = req.body;
 
@@ -31,12 +31,11 @@ const createTask = async (req, res) => {
   }
 };
 
-
 // Get all tasks
 exports.getTasks = async (req, res) => {
   try {
     const tasks = await Task.find()
-      .populate('assignedTo', 'userId')
+      .populate('assignedTo', 'name email department profilePicture')
       .populate('createdBy', 'name email');
     res.json(tasks);
   } catch (error) {
@@ -48,7 +47,7 @@ exports.getTasks = async (req, res) => {
 exports.getTaskById = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id)
-      .populate('assignedTo', 'userId')
+      .populate('assignedTo', 'name email department profilePicture')
       .populate('createdBy', 'name email');
 
     if (!task) return res.status(404).json({ message: 'Task not found' });

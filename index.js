@@ -12,8 +12,6 @@ const adminRoutes = require('./routes/adminRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 
-
-// Import JWT middleware
 const { protect, adminOnly } = require('./middleware/authMiddleware');
 
 dotenv.config();
@@ -32,31 +30,28 @@ app.use(logger);
 // Public route (Login/Register)
 app.use('/api/auth', authRoutes);
 
-// admin and employee route
+// Admin and employee routes
 app.use('/api/admins', adminRoutes);
-app.use('/api/employees', employeeRoutes)
+app.use('/api/employees', employeeRoutes);
 
-// announcements route
+// Announcements route
 app.use('/api/announcements', announcementRoutes);
 
-// attendance route
+// Attendance route
 app.use('/api/attendance', attendanceRoutes);
 
-// task route
+// Task route
 app.use('/api/tasks', taskRoutes);
 
-// Example protected admin route
+// Example protected admin dashboard
 app.get('/api/admin/dashboard', protect, adminOnly, (req, res) => {
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({ message: 'Access denied: Admins only' });
-  }
-
   res.json({
     message: 'Welcome Admin!',
     user: req.user
   });
 });
 
+// Example protected employee dashboard
 app.get('/api/employee/dashboard', protect, (req, res) => {
   if (req.user.role !== 'employee') {
     return res.status(403).json({ message: 'Access denied: Employees only' });

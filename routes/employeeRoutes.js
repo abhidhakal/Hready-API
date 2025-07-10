@@ -12,12 +12,12 @@ const {
 
 const router = express.Router();
 
-// Employee self profile
+// Employee self-management
 router.get('/me', protect, getMyProfile);
 router.put('/change-password', protect, changePassword);
 router.put('/upload-profile-picture', protect, uploadProfilePicture);
 
-// Admin management
+// Admin employee management
 router.get('/', protect, adminOnly, getAllEmployees);
 router.post('/', protect, adminOnly, createEmployee);
 router.put('/:id', protect, adminOnly, updateEmployee);

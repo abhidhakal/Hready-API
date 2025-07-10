@@ -1,13 +1,11 @@
 const User = require('../models/User');
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
 // Get admin by ID
 const getAdminById = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validate ObjectId first
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid admin ID format.' });
     }
@@ -27,7 +25,7 @@ const getAdminById = async (req, res) => {
     });
   } catch (err) {
     console.error('Error fetching admin:', err);
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -35,7 +33,7 @@ const getAdminById = async (req, res) => {
 const getMyProfile = async (req, res) => {
   try {
     const admin = await User.findById(req.user.id).select('-password');
-    if (!admin) {
+    if (!admin || admin.role !== 'admin') {
       return res.status(404).json({ message: 'Admin not found' });
     }
     res.json({
@@ -55,14 +53,13 @@ const getMyProfile = async (req, res) => {
 const updateMyProfile = async (req, res) => {
   try {
     const admin = await User.findById(req.user.id);
-    if (!admin) {
+    if (!admin || admin.role !== 'admin') {
       return res.status(404).json({ message: 'Admin not found' });
     }
 
     admin.name = req.body.name || admin.name;
     admin.email = req.body.email || admin.email;
     admin.contactNo = req.body.contactNo || admin.contactNo;
-    // Note: profilePicture not updated here, handled separately
 
     await admin.save();
     res.json({ message: 'Profile updated successfully' });
@@ -71,7 +68,7 @@ const updateMyProfile = async (req, res) => {
   }
 };
 
-// Upload profile picture (new)
+// Upload profile picture
 const uploadProfilePicture = async (req, res) => {
   try {
     if (!req.file) {
@@ -79,11 +76,10 @@ const uploadProfilePicture = async (req, res) => {
     }
 
     const admin = await User.findById(req.user.id);
-    if (!admin) {
+    if (!admin || admin.role !== 'admin') {
       return res.status(404).json({ message: 'Admin not found' });
     }
 
-    // Save the base64 string
     admin.profilePicture = req.file.buffer.toString('base64');
     await admin.save();
 
@@ -97,10 +93,9 @@ const uploadProfilePicture = async (req, res) => {
 // Change password
 const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
-
   try {
     const admin = await User.findById(req.user.id);
-    if (!admin) {
+    if (!admin || admin.role !== 'admin') {
       return res.status(404).json({ message: 'Admin not found' });
     }
 
@@ -109,7 +104,7 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ message: 'Current password is incorrect' });
     }
 
-    admin.password = newPassword; // Will be hashed by pre-save hook
+    admin.password = newPassword;
     await admin.save();
 
     res.json({ message: 'Password changed successfully' });

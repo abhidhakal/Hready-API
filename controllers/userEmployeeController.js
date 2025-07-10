@@ -1,10 +1,10 @@
 const User = require('../models/User');
-const Employee = require('../models/Employee');
 
 // Get all employees
 const getAllEmployees = async (req, res) => {
   try {
-    const employees = await Employee.find().populate('userId', 'name email department');
+    const employees = await User.find({ role: 'employee' })
+      .select('name email department status profilePicture contactNo');
     res.json(employees);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching employees', error: error.message });
@@ -42,17 +42,7 @@ const createEmployee = async (req, res) => {
       status
     });
 
-    // Also create Employee record linking to User
-    const employee = await Employee.create({
-      userId: user._id,
-      profilePicture,
-      contactNo,
-      department,
-      position,
-      status
-    });
-
-    res.status(201).json({ user, employee });
+    res.status(201).json(user);
   } catch (err) {
     console.error('Error creating employee:', err);
     res.status(500).json({ message: 'Server error' });
@@ -63,7 +53,9 @@ const createEmployee = async (req, res) => {
 const getMyProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
-    if (!user) return res.status(404).json({ message: 'Employee not found' });
+    if (!user || user.role !== 'employee') {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
@@ -75,7 +67,9 @@ const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   try {
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: 'Employee not found' });
+    if (!user || user.role !== 'employee') {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
 
     const isMatch = await user.matchPassword(currentPassword);
     if (!isMatch) {
@@ -95,7 +89,9 @@ const changePassword = async (req, res) => {
 const uploadProfilePicture = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: 'Employee not found' });
+    if (!user || user.role !== 'employee') {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
 
     user.profilePicture = req.body.profilePicture;
     await user.save();
@@ -110,7 +106,9 @@ const uploadProfilePicture = async (req, res) => {
 const updateEmployee = async (req, res) => {
   try {
     const updated = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!updated) return res.status(404).json({ message: 'Employee not found.' });
+    if (!updated || updated.role !== 'employee') {
+      return res.status(404).json({ message: 'Employee not found.' });
+    }
     res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -121,7 +119,9 @@ const updateEmployee = async (req, res) => {
 const deleteEmployee = async (req, res) => {
   try {
     const deleted = await User.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: 'Employee not found.' });
+    if (!deleted || deleted.role !== 'employee') {
+      return res.status(404).json({ message: 'Employee not found.' });
+    }
     res.json({ message: 'Employee deleted.' });
   } catch (err) {
     res.status(500).json({ message: err.message });

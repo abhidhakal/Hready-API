@@ -7,7 +7,7 @@ const getTodayAttendance = async (req, res) => {
     today.setHours(0, 0, 0, 0);
 
     const record = await Attendance.findOne({
-      employeeId: req.user.id,
+      user: req.user.id,
       date: today
     });
 
@@ -25,7 +25,7 @@ const getTodayAttendance = async (req, res) => {
 const getMyAttendance = async (req, res) => {
   try {
     const records = await Attendance.find({
-      employeeId: req.user.id
+      user: req.user.id
     }).sort({ date: -1 });
     res.json(records);
   } catch (err) {
@@ -42,11 +42,8 @@ const getAllAttendance = async (req, res) => {
 
     const records = await Attendance.find()
       .populate({
-        path: 'employeeId',
-        populate: {
-          path: 'userId',
-          select: 'name email'
-        }
+        path: 'user',
+        select: 'name email department'
       })
       .sort({ date: -1 });
 
@@ -62,13 +59,13 @@ const checkIn = async (req, res) => {
   const date = req.body.date ? new Date(req.body.date) : new Date();
   date.setHours(0, 0, 0, 0);
   try {
-    const existing = await Attendance.findOne({ employeeId: req.user.id, date });
+    const existing = await Attendance.findOne({ user: req.user.id, date });
     if (existing) {
       return res.status(400).json({ message: 'Already checked in for this date.' });
     }
 
     const attendance = await Attendance.create({
-      employeeId: req.user.id,
+      user: req.user.id,
       date,
       check_in_time: new Date(),
       status: 'present',
@@ -87,7 +84,7 @@ const checkOut = async (req, res) => {
   date.setHours(0, 0, 0, 0);
   try {
     const record = await Attendance.findOne({
-      employeeId: req.user.id,
+      user: req.user.id,
       date
     });
 
@@ -115,7 +112,7 @@ const getMonthlySummary = async (req, res) => {
 
   try {
     const records = await Attendance.find({
-      employeeId: req.user.id,
+      user: req.user.id,
       date: { $gte: start, $lte: end }
     });
 
@@ -132,7 +129,7 @@ const getMonthlySummary = async (req, res) => {
   }
 };
 
-// Smart reminder (placeholder)
+// Smart reminder placeholder
 const sendReminder = async (req, res) => {
   res.json({ message: 'Reminder logic not implemented yet.' });
 };
