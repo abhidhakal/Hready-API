@@ -11,6 +11,7 @@ const announcementRoutes = require('./routes/announcementRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const leaveRoutes = require('./routes/leaveRoutes');
 
 const { protect, adminOnly } = require('./middleware/authMiddleware');
 
@@ -42,6 +43,10 @@ app.use('/api/attendance', attendanceRoutes);
 
 // Task route
 app.use('/api/tasks', taskRoutes);
+
+// Leaves route
+app.use('/api/leaves', leaveRoutes);
+app.use('/uploads', express.static('uploads'));
 
 // Example protected admin dashboard
 app.get('/api/admin/dashboard', protect, adminOnly, (req, res) => {
