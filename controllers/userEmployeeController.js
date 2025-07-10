@@ -1,7 +1,8 @@
 const User = require('../models/User');
+const Employee = require('../models/Employee');
 
 // Get all employees
-exports.getAllEmployees = async (req, res) => {
+const getAllEmployees = async (req, res) => {
   try {
     const employees = await Employee.find().populate('userId', 'name email department');
     res.json(employees);
@@ -9,7 +10,6 @@ exports.getAllEmployees = async (req, res) => {
     res.status(500).json({ message: 'Error fetching employees', error: error.message });
   }
 };
-
 
 // Create employee (by admin)
 const createEmployee = async (req, res) => {
@@ -42,7 +42,17 @@ const createEmployee = async (req, res) => {
       status
     });
 
-    res.status(201).json(user);
+    // Also create Employee record linking to User
+    const employee = await Employee.create({
+      userId: user._id,
+      profilePicture,
+      contactNo,
+      department,
+      position,
+      status
+    });
+
+    res.status(201).json({ user, employee });
   } catch (err) {
     console.error('Error creating employee:', err);
     res.status(500).json({ message: 'Server error' });

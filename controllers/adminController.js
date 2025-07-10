@@ -1,22 +1,32 @@
 const User = require('../models/User');
+const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 // Get admin by ID
 const getAdminById = async (req, res) => {
   try {
-    const admin = await User.findById(req.params.id).select('-password');
-    if (!admin || admin.role !== 'admin') {
-      return res.status(404).json({ message: 'Admin not found' });
+    const { id } = req.params;
+
+    // Validate ObjectId first
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid admin ID format.' });
     }
+
+    const admin = await User.findById(id).select('-password');
+    if (!admin || admin.role !== 'admin') {
+      return res.status(404).json({ message: 'Admin not found.' });
+    }
+
     res.json({
       name: admin.name,
       email: admin.email,
       contactNo: admin.contactNo || '',
       profilePicture: admin.profilePicture || '',
       role: admin.role,
-      lastPasswordChange: admin.updatedAt // Optional: show last update
+      lastPasswordChange: admin.updatedAt
     });
   } catch (err) {
+    console.error('Error fetching admin:', err);
     res.status(500).json({ message: err.message });
   }
 };
