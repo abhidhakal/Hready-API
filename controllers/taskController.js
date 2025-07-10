@@ -1,7 +1,7 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
 
-exports.createTask = async (req, res) => {
+const createTask = async (req, res) => {
   try {
     const { title, description, dueDate, assignedTo, assignedDepartment, status } = req.body;
 
@@ -19,7 +19,7 @@ exports.createTask = async (req, res) => {
       dueDate: dueDate ? new Date(dueDate) : null,
       assignedTo: assignedUser ? assignedUser._id : null,
       assignedDepartment: assignedDepartment || null,
-      status: status || 'pending',
+      status: status || 'Pending',
       createdBy: req.user._id
     });
 
@@ -31,8 +31,7 @@ exports.createTask = async (req, res) => {
   }
 };
 
-// Get all tasks
-exports.getTasks = async (req, res) => {
+const getTasks = async (req, res) => {
   try {
     const tasks = await Task.find()
       .populate('assignedTo', 'name email department profilePicture')
@@ -43,8 +42,7 @@ exports.getTasks = async (req, res) => {
   }
 };
 
-// Get task by ID
-exports.getTaskById = async (req, res) => {
+const getTaskById = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id)
       .populate('assignedTo', 'name email department profilePicture')
@@ -57,8 +55,7 @@ exports.getTaskById = async (req, res) => {
   }
 };
 
-// Update a task
-exports.updateTask = async (req, res) => {
+const updateTask = async (req, res) => {
   try {
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
@@ -72,8 +69,7 @@ exports.updateTask = async (req, res) => {
   }
 };
 
-// Delete a task
-exports.deleteTask = async (req, res) => {
+const deleteTask = async (req, res) => {
   try {
     const deletedTask = await Task.findByIdAndDelete(req.params.id);
     if (!deletedTask) return res.status(404).json({ message: 'Task not found' });
@@ -81,4 +77,59 @@ exports.deleteTask = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error deleting task', error: error.message });
   }
+};
+
+const getMyTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find({ assignedTo: req.user._id })
+      .populate('assignedTo', 'name email department profilePicture')
+      .populate('createdBy', 'name email');
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching your tasks', error: error.message });
+  }
+};
+
+const updateMyTaskStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowedStatuses = ['Pending', 'In Progress', 'Completed'];
+
+    console.log('Incoming status:', status);
+    console.log('Params ID:', req.params.id);
+    console.log('User ID:', req.user._id);
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: 'Invalid status' });
+    }
+
+    const task = await Task.findOne({
+      _id: req.params.id,
+      assignedTo: req.user._id
+    });
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    console.log('Task found:', task);
+
+    task.status = status;
+    await task.save();
+
+    res.json(task);
+  } catch (error) {
+    console.error('Error in updateMyTaskStatus:', error);
+    res.status(500).json({ message: 'Error updating task status', error: error.message });
+  }
+};
+
+module.exports = {
+  createTask,
+  getTasks,
+  getTaskById,
+  updateTask,
+  deleteTask,
+  getMyTasks,
+  updateMyTaskStatus
 };

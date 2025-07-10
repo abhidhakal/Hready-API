@@ -1,5 +1,8 @@
 const express = require('express');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
+const multer = require('multer');
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 const {
   getAllEmployees,
   getMyProfile,
@@ -15,7 +18,12 @@ const router = express.Router();
 // Employee self-management
 router.get('/me', protect, getMyProfile);
 router.put('/change-password', protect, changePassword);
-router.put('/upload-profile-picture', protect, uploadProfilePicture);
+router.put(
+  '/upload-profile-picture',
+  protect,
+  upload.single('profilePicture'),
+  uploadProfilePicture
+);
 
 // Admin employee management
 router.get('/', protect, adminOnly, getAllEmployees);

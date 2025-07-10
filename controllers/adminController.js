@@ -36,18 +36,12 @@ const getMyProfile = async (req, res) => {
     if (!admin || admin.role !== 'admin') {
       return res.status(404).json({ message: 'Admin not found' });
     }
-    res.json({
-      name: admin.name,
-      email: admin.email,
-      contactNo: admin.contactNo || '',
-      profilePicture: admin.profilePicture || '',
-      role: admin.role,
-      lastPasswordChange: admin.updatedAt
-    });
+    res.json(admin); // Return full user object except password
   } catch (err) {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 // Update logged-in admin profile
 const updateMyProfile = async (req, res) => {

@@ -85,19 +85,24 @@ const changePassword = async (req, res) => {
   }
 };
 
-// Upload profile picture
+// Upload profile picture (Multer-based)
 const uploadProfilePicture = async (req, res) => {
   try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
     const user = await User.findById(req.user.id);
     if (!user || user.role !== 'employee') {
       return res.status(404).json({ message: 'Employee not found' });
     }
 
-    user.profilePicture = req.body.profilePicture;
+    user.profilePicture = req.file.buffer.toString('base64');
     await user.save();
 
     res.json({ message: 'Profile picture updated successfully' });
   } catch (err) {
+    console.error('Error uploading profile picture:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

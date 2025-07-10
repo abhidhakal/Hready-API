@@ -1,0 +1,4 @@
+const jwt = require("jsonwebtoken");
+const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NmE4ZWE5ZmE2ODhhNWRhNGZiZmFlMyIsInJvbGUiOiJlbXBsb3llZSIsImlhdCI6MTc1MjE0NjY5NiwiZXhwIjoxNzUyMjMzMDk2fQ.IkkXH1_u2z9-8xd5O8vHRPs7b-DetvG8EhDUdOpEqtU";
+
+jwt.verify(token, "dcecea2208e50891ccee9623863986ff6400e69f5c7727e3ed1e6b95381c1c4b")

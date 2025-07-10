@@ -11,8 +11,8 @@ const taskSchema = new mongoose.Schema({
   assignedDepartment: { type: String },
   status: {
     type: String,
-    enum: ['pending', 'in progress', 'completed'],
-    default: 'pending'
+    enum: ['Pending', 'In Progress', 'Completed'],
+    default: 'Pending'
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
