@@ -97,7 +97,7 @@ const uploadProfilePicture = async (req, res) => {
       return res.status(404).json({ message: 'Employee not found' });
     }
 
-    user.profilePicture = req.file.buffer.toString('base64');
+    user.profilePicture = `/uploads/${req.file.filename}`;
     await user.save();
 
     res.json({ message: 'Profile picture updated successfully' });

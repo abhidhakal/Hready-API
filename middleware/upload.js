@@ -13,16 +13,24 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter
+// File filter with safer handling
 const fileFilter = (req, file, cb) => {
   const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only .png, .jpg, and .jpeg formats are allowed.'));
+    // Instead of throwing, just mark as rejected
+    cb(null, false);
   }
 };
 
-const upload = multer({ storage, fileFilter });
+// Multer instance
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 2 * 1024 * 1024 // 2 MB limit (optional)
+  }
+});
 
 module.exports = upload;

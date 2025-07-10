@@ -74,7 +74,8 @@ const uploadProfilePicture = async (req, res) => {
       return res.status(404).json({ message: 'Admin not found' });
     }
 
-    admin.profilePicture = req.file.buffer.toString('base64');
+    // Save the relative path (like /uploads/filename.jpg)
+    admin.profilePicture = `/uploads/${req.file.filename}`;
     await admin.save();
 
     res.json({ message: 'Profile picture updated successfully' });
