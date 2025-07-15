@@ -18,7 +18,7 @@ const { protect, adminOnly } = require('./middleware/authMiddleware');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+// const PORT = process.env.PORT || 3000;
 
 // Connect to MongoDB
 connectDB();
@@ -68,6 +68,8 @@ app.get('/api/employee/dashboard', protect, (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Server running on port ${PORT}`);
+// });
+
+module.exports = app;
