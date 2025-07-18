@@ -4,13 +4,14 @@ const Request = require('../models/Request');
 exports.createRequest = async (req, res) => {
   try {
     const { title, message, type } = req.body;
+    // Only set attachment if a file is uploaded
     const attachment = req.file ? `/uploads/${req.file.filename}` : undefined;
     const request = new Request({
       title,
       message,
       type: type || 'request',
       createdBy: req.user._id,
-      attachment
+      ...(attachment && { attachment })
     });
     await request.save();
     res.status(201).json(request);

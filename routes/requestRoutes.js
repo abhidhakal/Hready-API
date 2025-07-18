@@ -2,12 +2,11 @@ const express = require('express');
 const router = express.Router();
 const requestController = require('../controllers/requestController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
-// const multer = require('multer'); // Uncomment if you want file upload
-// const upload = multer({ dest: 'uploads/' });
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 
 // Employee creates a request/report
-// router.post('/', protect, upload.single('attachment'), requestController.createRequest);
-router.post('/', protect, requestController.createRequest);
+router.post('/', protect, upload.single('attachment'), requestController.createRequest);
 
 // Admin gets all requests
 router.get('/', protect, adminOnly, requestController.getAllRequests);
