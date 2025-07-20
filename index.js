@@ -13,6 +13,9 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const taskRoutes = require('./routes/taskRoutes');
 const leaveRoutes = require('./routes/leaveRoutes');
 const requestRoutes = require('./routes/requestRoutes');
+const salaryRoutes = require('./routes/salaryRoutes');
+const payrollRoutes = require('./routes/payrollRoutes');
+const bankAccountRoutes = require('./routes/bankAccountRoutes');
 
 const { protect, adminOnly } = require('./middleware/authMiddleware');
 
@@ -49,6 +52,11 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/leaves', leaveRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/api/requests', requestRoutes);
+
+// Payroll routes
+app.use('/api/salaries', salaryRoutes);
+app.use('/api/payrolls', payrollRoutes);
+app.use('/api/bank-accounts', bankAccountRoutes);
 
 // Example protected admin dashboard
 app.get('/api/admin/dashboard', protect, adminOnly, (req, res) => {
