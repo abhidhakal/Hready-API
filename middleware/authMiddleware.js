@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { isTokenBlacklisted } = require('../controllers/authController');
 
 const protect = async (req, res, next) => {
   const bearerHeader = req.headers['authorization'];
@@ -11,6 +12,11 @@ const protect = async (req, res, next) => {
   const token = bearerHeader.split(' ')[1];
 
   try {
+    // Check if token is blacklisted
+    if (isTokenBlacklisted(token)) {
+      return res.status(401).json({ message: 'Token has been invalidated' });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Load the full user so req.user._id and req.user.role work everywhere
