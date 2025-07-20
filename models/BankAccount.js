@@ -31,8 +31,8 @@ const bankAccountSchema = new mongoose.Schema({
   },
   accountType: {
     type: String,
-    enum: ['savings', 'checking', 'current'],
-    default: 'checking'
+    enum: ['Savings', 'Current', 'Checking'],
+    default: 'Saving'
   },
   isDefault: {
     type: Boolean,
@@ -46,6 +46,14 @@ const bankAccountSchema = new mongoose.Schema({
   notes: String
 }, {
   timestamps: true
+});
+
+// Capitalize accountType before saving (e.g., 'savings' -> 'Savings')
+bankAccountSchema.pre('save', function(next) {
+  if (this.accountType) {
+    this.accountType = this.accountType.charAt(0).toUpperCase() + this.accountType.slice(1).toLowerCase();
+  }
+  next();
 });
 
 // Index for efficient queries

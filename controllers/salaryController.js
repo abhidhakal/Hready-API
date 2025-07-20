@@ -41,36 +41,48 @@ const getSalaryByEmployee = async (req, res) => {
 const createSalary = async (req, res) => {
   try {
     const {
-      employeeId,
+      employee,
       basicSalary,
       allowances,
       deductions,
       currency,
       effectiveDate,
-      notes
+      notes,
+      taxPercentage,
+      insurancePercentage,
+      grossSalary,
+      netSalary,
+      totalAllowances,
+      totalDeductions
     } = req.body;
 
     // Check if employee exists
-    const employee = await User.findById(employeeId);
-    if (!employee) {
+    const employeeDoc = await User.findById(employee);
+    if (!employeeDoc) {
       return res.status(404).json({ message: 'Employee not found' });
     }
 
     // Deactivate previous active salary
     await Salary.updateMany(
-      { employee: employeeId, status: 'active' },
+      { employee: employee, status: 'active' },
       { status: 'inactive' }
     );
 
     // Create new salary
     const salary = await Salary.create({
-      employee: employeeId,
+      employee: employee,
       basicSalary,
       allowances: allowances || {},
       deductions: deductions || {},
       currency,
       effectiveDate: effectiveDate || new Date(),
       notes,
+      taxPercentage,
+      insurancePercentage,
+      grossSalary,
+      netSalary,
+      totalAllowances,
+      totalDeductions,
       createdBy: req.user._id
     });
 
@@ -91,6 +103,14 @@ const updateSalary = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
+
+    // Ensure employee field is properly handled
+    if (updateData.employee) {
+      const employeeDoc = await User.findById(updateData.employee);
+      if (!employeeDoc) {
+        return res.status(404).json({ message: 'Employee not found' });
+      }
+    }
 
     const salary = await Salary.findByIdAndUpdate(
       id,

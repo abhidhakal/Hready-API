@@ -16,8 +16,10 @@ router.use(protect);
 
 // Admin only routes
 router.get('/', adminOnly, getAllBankAccounts);
-router.post('/', adminOnly, createBankAccount);
-router.put('/:id', adminOnly, updateBankAccount);
+// Allow employees to create their own bank account
+router.post('/', createBankAccount);
+// Allow employees to update their own bank account
+router.put('/:id', updateBankAccount);
 router.delete('/:id', adminOnly, deleteBankAccount);
 router.put('/:id/set-default', adminOnly, setDefaultBankAccount);
 

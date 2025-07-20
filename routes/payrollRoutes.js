@@ -8,7 +8,8 @@ const {
   approvePayroll,
   markPayrollAsPaid,
   getPayrollStats,
-  deletePayroll
+  deletePayroll,
+  bulkApprovePayrolls
 } = require('../controllers/payrollController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -25,6 +26,7 @@ router.put('/:id/approve', adminOnly, approvePayroll);
 router.put('/:id/mark-paid', adminOnly, markPayrollAsPaid);
 router.delete('/:id', adminOnly, deletePayroll);
 router.get('/stats', adminOnly, getPayrollStats);
+router.put('/bulk-approve', adminOnly, bulkApprovePayrolls);
 
 // Employee can access their own payroll
 router.get('/:id', getPayrollById);

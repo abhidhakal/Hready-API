@@ -26,8 +26,8 @@ const salarySchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    default: 'USD',
-    enum: ['USD', 'EUR', 'GBP', 'INR', 'CAD', 'AUD']
+    default: 'Rs.',
+    enum: ['Rs.', 'USD', 'EUR', 'GBP', 'INR', 'CAD', 'AUD']
   },
   effectiveDate: {
     type: Date,
@@ -39,6 +39,12 @@ const salarySchema = new mongoose.Schema({
     default: 'active'
   },
   notes: String,
+  taxPercentage: { type: Number, default: 0, min: 0, max: 100 },
+  insurancePercentage: { type: Number, default: 0, min: 0, max: 100 },
+  grossSalary: { type: Number, default: 0, min: 0 },
+  netSalary: { type: Number, default: 0, min: 0 },
+  totalAllowances: { type: Number, default: 0, min: 0 },
+  totalDeductions: { type: Number, default: 0, min: 0 },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -52,18 +58,8 @@ const salarySchema = new mongoose.Schema({
 salarySchema.index({ employee: 1, status: 1 });
 salarySchema.index({ effectiveDate: -1 });
 
-// Virtual for total salary
-salarySchema.virtual('totalAllowances').get(function() {
-  return Object.values(this.allowances).reduce((sum, val) => sum + val, 0);
-});
-
-salarySchema.virtual('totalDeductions').get(function() {
-  return Object.values(this.deductions).reduce((sum, val) => sum + val, 0);
-});
-
-salarySchema.virtual('netSalary').get(function() {
-  return this.basicSalary + this.totalAllowances - this.totalDeductions;
-});
+// Remove virtuals for totalAllowances, totalDeductions, and netSalary
+// since they now exist as real fields in the schema.
 
 // Ensure virtuals are included in JSON
 salarySchema.set('toJSON', { virtuals: true });

@@ -52,6 +52,10 @@ const createBankAccount = async (req, res) => {
     if (!employee) {
       return res.status(404).json({ message: 'Employee not found' });
     }
+    // Only allow if admin or the owner
+    if (req.user.role !== 'admin' && req.user._id.toString() !== employeeId) {
+      return res.status(403).json({ message: 'Not authorized to create a bank account for this employee' });
+    }
 
     // If this is set as default, unset other default accounts
     if (isDefault) {
@@ -90,15 +94,22 @@ const updateBankAccount = async (req, res) => {
     const { id } = req.params;
     const updateData = req.body;
 
+    // Find the bank account first
+    const bankAccount = await BankAccount.findById(id);
+    if (!bankAccount) {
+      return res.status(404).json({ message: 'Bank account not found' });
+    }
+    // Only allow if admin or the owner
+    if (req.user.role !== 'admin' && req.user._id.toString() !== bankAccount.employee.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this bank account' });
+    }
+
     // If setting as default, unset other default accounts
     if (updateData.isDefault) {
-      const bankAccount = await BankAccount.findById(id);
-      if (bankAccount) {
-        await BankAccount.updateMany(
-          { employee: bankAccount.employee, isDefault: true },
-          { isDefault: false }
-        );
-      }
+      await BankAccount.updateMany(
+        { employee: bankAccount.employee, isDefault: true },
+        { isDefault: false }
+      );
     }
 
     const updatedBankAccount = await BankAccount.findByIdAndUpdate(
@@ -106,10 +117,6 @@ const updateBankAccount = async (req, res) => {
       { ...updateData, updatedAt: new Date() },
       { new: true, runValidators: true }
     ).populate('employee', 'name email department position');
-
-    if (!updatedBankAccount) {
-      return res.status(404).json({ message: 'Bank account not found' });
-    }
 
     res.json(updatedBankAccount);
   } catch (error) {

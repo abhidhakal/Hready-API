@@ -13,17 +13,35 @@ const generatePayroll = async (req, res) => {
 
     // Get all active employees with salaries
     const employees = await User.find({ role: 'employee', status: 'active' });
+    console.log(`Found ${employees.length} active employees`);
+    
     const generatedPayrolls = [];
+    const skippedEmployees = [];
 
     for (const employee of employees) {
-      const salary = await Salary.findOne({ 
+      console.log(`Processing employee: ${employee.name} (${employee._id})`);
+      
+      // First try to find active salary
+      let salary = await Salary.findOne({ 
         employee: employee._id, 
         status: 'active' 
       });
 
+      // If no active salary, try to find any salary for this employee
       if (!salary) {
+        console.log(`No active salary found for ${employee.name}, looking for any salary record`);
+        salary = await Salary.findOne({ 
+          employee: employee._id 
+        }).sort({ createdAt: -1 }); // Get the most recent salary
+      }
+
+      if (!salary) {
+        console.log(`Skipping ${employee.name} - no salary found at all`);
+        skippedEmployees.push({ name: employee.name, reason: 'No salary found' });
         continue; // Skip employees without salary
       }
+
+      console.log(`Found salary for ${employee.name}: ${salary.basicSalary} (status: ${salary.status})`);
 
       // Check if payroll already exists for this month
       const existingPayroll = await Payroll.findOne({
@@ -33,6 +51,8 @@ const generatePayroll = async (req, res) => {
       });
 
       if (existingPayroll) {
+        console.log(`Skipping ${employee.name} - payroll already exists for ${month}/${year}`);
+        skippedEmployees.push({ name: employee.name, reason: `Payroll already exists for ${month}/${year}` });
         continue; // Skip if payroll already exists
       }
 
@@ -53,12 +73,17 @@ const generatePayroll = async (req, res) => {
         { path: 'createdBy', select: 'name' }
       ]);
 
+      console.log(`Generated payroll for ${employee.name}`);
       generatedPayrolls.push(populatedPayroll);
     }
 
+    console.log(`Generated ${generatedPayrolls.length} payrolls, skipped ${skippedEmployees.length} employees`);
+    console.log('Skipped employees:', skippedEmployees);
+
     res.status(201).json({
       message: `Generated ${generatedPayrolls.length} payroll records`,
-      payrolls: generatedPayrolls
+      payrolls: generatedPayrolls,
+      skippedEmployees
     });
   } catch (error) {
     console.error('Error generating payroll:', error);
@@ -217,6 +242,31 @@ const markPayrollAsPaid = async (req, res) => {
   }
 };
 
+// Bulk approve all draft payrolls for a given month and year
+const bulkApprovePayrolls = async (req, res) => {
+  try {
+    const { month, year } = req.body;
+    if (!month || !year) {
+      return res.status(400).json({ message: 'Month and year are required' });
+    }
+    const filter = { status: 'draft', month: parseInt(month), year: parseInt(year) };
+    const result = await Payroll.updateMany(
+      filter,
+      {
+        $set: {
+          status: 'approved',
+          approvedBy: req.user._id,
+          approvedAt: new Date()
+        }
+      }
+    );
+    res.json({ message: `Approved ${result.modifiedCount} payrolls`, count: result.modifiedCount });
+  } catch (error) {
+    console.error('Error bulk approving payrolls:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Get payroll statistics
 const getPayrollStats = async (req, res) => {
   try {
@@ -285,6 +335,7 @@ module.exports = {
   updatePayroll,
   approvePayroll,
   markPayrollAsPaid,
+  bulkApprovePayrolls,
   getPayrollStats,
   deletePayroll
 }; 

@@ -52,8 +52,8 @@ const payrollSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    default: 'USD',
-    enum: ['USD', 'EUR', 'GBP', 'INR', 'CAD', 'AUD']
+    default: 'Rs.',
+    enum: ['Rs.', 'USD', 'EUR', 'GBP', 'INR', 'CAD', 'AUD']
   },
   status: {
     type: String,
