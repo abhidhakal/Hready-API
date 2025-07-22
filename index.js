@@ -51,7 +51,7 @@ app.use('/api/tasks', taskRoutes);
 
 // Leaves route
 app.use('/api/leaves', leaveRoutes);
-app.use('/uploads', express.static('uploads'));
+app.use('/api/uploads', express.static('uploads'));
 app.use('/api/requests', requestRoutes);
 
 // Payroll routes
