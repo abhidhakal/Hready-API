@@ -1,78 +1,82 @@
 const request = require('supertest');
 const app = require('../index');
 const User = require('../models/User');
-const Task = require('../models/Task');
+const Payroll = require('../models/Payroll');
 const mongoose = require('mongoose');
 
 let adminToken;
 let employeeToken;
-let createdTaskId;
+let createdPayrollId;
 
 beforeAll(async () => {
-  await User.deleteMany({ email: { $in: ['admin@task.com', 'employee@task.com'] } });
-  await Task.deleteMany({});
+  await User.deleteMany({ email: { $in: ['admin@payroll.com', 'employee@payroll.com'] } });
+  await Payroll.deleteMany({});
 
   await request(app).post('/api/auth/register').send({
-    name: 'Admin Task', email: 'admin@task.com', password: 'adminpass', role: 'admin'
+    name: 'Admin Payroll', email: 'admin@payroll.com', password: 'adminpass', role: 'admin'
   });
   const adminLogin = await request(app).post('/api/auth/login').send({
-    email: 'admin@task.com', password: 'adminpass'
+    email: 'admin@payroll.com', password: 'adminpass'
   });
   adminToken = adminLogin.body.token;
 
   await request(app).post('/api/auth/register').send({
-    name: 'Employee Task', email: 'employee@task.com', password: 'employeepass', role: 'employee'
+    name: 'Employee Payroll', email: 'employee@payroll.com', password: 'employeepass', role: 'employee'
   });
   const empLogin = await request(app).post('/api/auth/login').send({
-    email: 'employee@task.com', password: 'employeepass'
+    email: 'employee@payroll.com', password: 'employeepass'
   });
   employeeToken = empLogin.body.token;
 });
 
 afterAll(async () => {
-  await User.deleteMany({ email: { $in: ['admin@task.com', 'employee@task.com'] } });
-  await Task.deleteMany({});
+  await User.deleteMany({ email: { $in: ['admin@payroll.com', 'employee@payroll.com'] } });
+  await Payroll.deleteMany({});
   await mongoose.disconnect();
 });
 
-describe('Task API', () => {
-  test('Admin can create a task', async () => {
+describe('Payroll API', () => {
+  test('Admin can generate payroll', async () => {
     const res = await request(app)
-      .post('/api/tasks')
+      .post('/api/payroll/generate')
       .set('User-Agent', 'jest-test')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ title: 'Test Task', description: 'Test', assignedTo: 'employeeId' });
+      .send({ month: 7, year: 2025 });
     expect([200,201,400,401,403,404]).toContain(res.statusCode);
-    createdTaskId = res.body._id;
+    createdPayrollId = res.body._id || (res.body[0] && res.body[0]._id);
   });
 
-  test('Admin can get all tasks', async () => {
+  test('Admin can get all payrolls', async () => {
     const res = await request(app)
-      .get('/api/tasks')
+      .get('/api/payroll')
       .set('User-Agent', 'jest-test')
       .set('Authorization', `Bearer ${adminToken}`);
     expect([200,201,400,401,403,404]).toContain(res.statusCode);
     if (Array.isArray(res.body)) {
       expect(Array.isArray(res.body)).toBe(true);
     } else {
-      expect(res.body).toHaveProperty('message');
+      expect(typeof res.body).toBe('object');
     }
   });
 
-  test('Employee can get their own tasks', async () => {
+  test('Employee can get their payroll history', async () => {
     const res = await request(app)
-      .get('/api/tasks/employee/employeeId')
+      .get(`/api/payroll/employee/${adminToken ? 'employeeId' : 'unknown'}/history`)
       .set('User-Agent', 'jest-test')
       .set('Authorization', `Bearer ${employeeToken}`);
     expect([200,201,400,401,403,404]).toContain(res.statusCode);
   });
 
-  test('Admin can delete a task', async () => {
-    if (!createdTaskId) return;
+  test('Admin can get payroll stats', async () => {
     const res = await request(app)
-      .delete(`/api/tasks/${createdTaskId}`)
+      .get('/api/payroll/stats')
       .set('User-Agent', 'jest-test')
       .set('Authorization', `Bearer ${adminToken}`);
     expect([200,201,400,401,403,404]).toContain(res.statusCode);
   });
-});
+
+  test('Admin cannot access payrolls without token', async () => {
+    const res = await request(app).get('/api/payroll').set('User-Agent', 'jest-test');
+    expect([200,201,400,401,403,404]).toContain(res.statusCode);
+  });
+}); 

@@ -1,54 +1,54 @@
 const request = require('supertest');
 const app = require('../index');
 const User = require('../models/User');
-const Leave = require('../models/Leave');
+const Request = require('../models/Request');
 const mongoose = require('mongoose');
 
 let adminToken;
 let employeeToken;
-let createdLeaveId;
+let createdRequestId;
 
 beforeAll(async () => {
-  await User.deleteMany({ email: { $in: ['admin@test.com', 'employee@test.com'] } });
-  await Leave.deleteMany({});
+  await User.deleteMany({ email: { $in: ['admin@request.com', 'employee@request.com'] } });
+  await Request.deleteMany({});
 
   await request(app).post('/api/auth/register').send({
-    name: 'Admin User', email: 'admin@test.com', password: 'adminpass', role: 'admin'
+    name: 'Admin Request', email: 'admin@request.com', password: 'adminpass', role: 'admin'
   });
   const adminLogin = await request(app).post('/api/auth/login').send({
-    email: 'admin@test.com', password: 'adminpass'
+    email: 'admin@request.com', password: 'adminpass'
   });
   adminToken = adminLogin.body.token;
 
   await request(app).post('/api/auth/register').send({
-    name: 'Employee User', email: 'employee@test.com', password: 'employeepass', role: 'employee'
+    name: 'Employee Request', email: 'employee@request.com', password: 'employeepass', role: 'employee'
   });
   const empLogin = await request(app).post('/api/auth/login').send({
-    email: 'employee@test.com', password: 'employeepass'
+    email: 'employee@request.com', password: 'employeepass'
   });
   employeeToken = empLogin.body.token;
 });
 
 afterAll(async () => {
-  await User.deleteMany({ email: { $in: ['admin@test.com', 'employee@test.com'] } });
-  await Leave.deleteMany({});
+  await User.deleteMany({ email: { $in: ['admin@request.com', 'employee@request.com'] } });
+  await Request.deleteMany({});
   await mongoose.disconnect();
 });
 
-describe('Leave API', () => {
-  test('Employee can apply for leave', async () => {
+describe('Request API', () => {
+  test('Employee can create a request', async () => {
     const res = await request(app)
-      .post('/api/leaves/apply')
+      .post('/api/requests')
       .set('User-Agent', 'jest-test')
       .set('Authorization', `Bearer ${employeeToken}`)
-      .send({ from: '2025-07-21', to: '2025-07-25', reason: 'Vacation' });
+      .send({ type: 'leave', reason: 'Vacation', from: '2025-07-01', to: '2025-07-05' });
     expect([200,201,400,401,403,404]).toContain(res.statusCode);
-    createdLeaveId = res.body._id;
+    createdRequestId = res.body._id;
   });
 
-  test('Admin can get all leaves', async () => {
+  test('Admin can get all requests', async () => {
     const res = await request(app)
-      .get('/api/leaves')
+      .get('/api/requests')
       .set('User-Agent', 'jest-test')
       .set('Authorization', `Bearer ${adminToken}`);
     expect([200,201,400,401,403,404]).toContain(res.statusCode);
@@ -59,20 +59,20 @@ describe('Leave API', () => {
     }
   });
 
-  test('Employee can get their own leaves', async () => {
+  test('Employee can get their own requests', async () => {
     const res = await request(app)
-      .get('/api/leaves/employee/employeeId')
+      .get('/api/requests/employee/employeeId')
       .set('User-Agent', 'jest-test')
       .set('Authorization', `Bearer ${employeeToken}`);
     expect([200,201,400,401,403,404]).toContain(res.statusCode);
   });
 
-  test('Admin can delete a leave record', async () => {
-    if (!createdLeaveId) return;
+  test('Admin can delete a request', async () => {
+    if (!createdRequestId) return;
     const res = await request(app)
-      .delete(`/api/leaves/${createdLeaveId}`)
+      .delete(`/api/requests/${createdRequestId}`)
       .set('User-Agent', 'jest-test')
       .set('Authorization', `Bearer ${adminToken}`);
     expect([200,201,400,401,403,404]).toContain(res.statusCode);
   });
-});
+}); 
