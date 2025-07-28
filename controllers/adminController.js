@@ -65,18 +65,27 @@ const updateMyProfile = async (req, res) => {
 // Upload profile picture
 const uploadProfilePicture = async (req, res) => {
   try {
+    console.log('Upload profile picture called');
+    console.log('File received:', req.file);
+    
     if (!req.file) {
+      console.log('No file uploaded');
       return res.status(400).json({ message: 'No file uploaded' });
     }
 
     const admin = await User.findById(req.user.id);
     if (!admin || admin.role !== 'admin') {
+      console.log('Admin not found');
       return res.status(404).json({ message: 'Admin not found' });
     }
 
+    console.log('Saving Cloudinary URL:', req.file.path);
+    
     // Save the Cloudinary URL (req.file.path contains the Cloudinary URL)
     admin.profilePicture = req.file.path;
     await admin.save();
+
+    console.log('Profile picture saved successfully');
 
     res.json({ 
       message: 'Profile picture updated successfully',
@@ -84,7 +93,11 @@ const uploadProfilePicture = async (req, res) => {
     });
   } catch (err) {
     console.error('Error uploading profile picture:', err);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error stack:', err.stack);
+    res.status(500).json({ 
+      message: 'Server error',
+      error: err.message 
+    });
   }
 };
 
