@@ -79,17 +79,17 @@ const uploadProfilePicture = async (req, res) => {
       return res.status(404).json({ message: 'Admin not found' });
     }
 
-    console.log('Saving Cloudinary URL:', req.file.path);
+    console.log('Saving local file path:', `/uploads/${req.file.filename}`);
     
-    // Save the Cloudinary URL (req.file.path contains the Cloudinary URL)
-    admin.profilePicture = req.file.path;
+    // Save the local file path (temporary fix)
+    admin.profilePicture = `/uploads/${req.file.filename}`;
     await admin.save();
 
     console.log('Profile picture saved successfully');
 
     res.json({ 
       message: 'Profile picture updated successfully',
-      profilePicture: req.file.path
+      profilePicture: `/uploads/${req.file.filename}`
     });
   } catch (err) {
     console.error('Error uploading profile picture:', err);
