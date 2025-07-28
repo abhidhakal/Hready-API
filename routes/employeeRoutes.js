@@ -10,7 +10,8 @@ const {
   uploadProfilePicture,
   createEmployee,
   updateEmployee,
-  deleteEmployee
+  deleteEmployee,
+  deactivateMyAccount
 } = require('../controllers/userEmployeeController');
 
 const router = express.Router();
@@ -18,6 +19,7 @@ const router = express.Router();
 // Employee self-management
 router.get('/me', protect, getMyProfile);
 router.put('/me', protect, updateMyProfile);
+router.delete('/me', protect, deactivateMyAccount);
 router.put('/change-password', protect, changePassword);
 router.put(
   '/upload-profile-picture',

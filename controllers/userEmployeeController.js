@@ -81,6 +81,24 @@ const updateMyProfile = async (req, res) => {
   }
 };
 
+// Deactivate logged-in employee account
+const deactivateMyAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'employee') {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    // Set status to inactive instead of deleting
+    user.status = 'inactive';
+    await user.save();
+
+    res.json({ message: 'Account deactivated successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Change password
 const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
@@ -164,6 +182,7 @@ module.exports = {
   createEmployee,
   getMyProfile,
   updateMyProfile,
+  deactivateMyAccount,
   changePassword,
   uploadProfilePicture,
   updateEmployee,
