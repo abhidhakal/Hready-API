@@ -97,13 +97,13 @@ const uploadProfilePicture = async (req, res) => {
       return res.status(404).json({ message: 'Employee not found' });
     }
 
-    // Save the Cloudinary URL (req.file.path contains the Cloudinary URL)
-    user.profilePicture = req.file.path;
+    // Save the local file path (temporary fix)
+    user.profilePicture = `/uploads/${req.file.filename}`;
     await user.save();
 
     res.json({ 
       message: 'Profile picture updated successfully',
-      profilePicture: req.file.path
+      profilePicture: `/uploads/${req.file.filename}`
     });
   } catch (err) {
     console.error('Error uploading profile picture:', err);
