@@ -62,6 +62,25 @@ const getMyProfile = async (req, res) => {
   }
 };
 
+// Update logged-in employee profile
+const updateMyProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || user.role !== 'employee') {
+      return res.status(404).json({ message: 'Employee not found' });
+    }
+
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.contactNo = req.body.contactNo || user.contactNo;
+
+    await user.save();
+    res.json({ message: 'Profile updated successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Change password
 const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
@@ -144,6 +163,7 @@ module.exports = {
   getAllEmployees,
   createEmployee,
   getMyProfile,
+  updateMyProfile,
   changePassword,
   uploadProfilePicture,
   updateEmployee,

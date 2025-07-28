@@ -5,6 +5,7 @@ const { upload } = require('../config/cloudinary');
 const {
   getAllEmployees,
   getMyProfile,
+  updateMyProfile,
   changePassword,
   uploadProfilePicture,
   createEmployee,
@@ -16,6 +17,7 @@ const router = express.Router();
 
 // Employee self-management
 router.get('/me', protect, getMyProfile);
+router.put('/me', protect, updateMyProfile);
 router.put('/change-password', protect, changePassword);
 router.put(
   '/upload-profile-picture',
