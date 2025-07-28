@@ -22,7 +22,18 @@ router.put(
   '/upload-profile-picture',
   protect,
   adminOnly,
-  upload.single('profilePicture'),
+  (req, res, next) => {
+    upload.single('profilePicture')(req, res, (err) => {
+      if (err) {
+        console.error('Multer error:', err);
+        return res.status(400).json({ 
+          message: 'File upload error', 
+          error: err.message 
+        });
+      }
+      next();
+    });
+  },
   uploadProfilePicture
 );
 

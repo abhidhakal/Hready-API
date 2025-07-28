@@ -67,6 +67,8 @@ const uploadProfilePicture = async (req, res) => {
   try {
     console.log('Upload profile picture called');
     console.log('File received:', req.file);
+    console.log('Request body:', req.body);
+    console.log('Request headers:', req.headers);
     
     if (!req.file) {
       console.log('No file uploaded');
@@ -96,9 +98,15 @@ const uploadProfilePicture = async (req, res) => {
   } catch (err) {
     console.error('Error uploading profile picture:', err);
     console.error('Error stack:', err.stack);
+    console.error('Error details:', {
+      name: err.name,
+      message: err.message,
+      code: err.code
+    });
     res.status(500).json({ 
       message: 'Server error',
-      error: err.message 
+      error: err.message,
+      details: err.stack
     });
   }
 };

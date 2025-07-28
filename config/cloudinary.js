@@ -58,5 +58,6 @@ try {
   module.exports = { cloudinary, upload };
 } catch (error) {
   console.error('Error setting up Cloudinary:', error);
+  console.error('Error stack:', error.stack);
   throw error;
 } 
