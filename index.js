@@ -44,6 +44,26 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Test Cloudinary endpoint
+app.get('/api/test-cloudinary', (req, res) => {
+  try {
+    const { cloudinary } = require('./config/cloudinary');
+    res.status(200).json({ 
+      status: 'OK', 
+      message: 'Cloudinary is configured',
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+      hasApiKey: !!process.env.CLOUDINARY_API_KEY,
+      hasApiSecret: !!process.env.CLOUDINARY_API_SECRET
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      message: 'Cloudinary configuration failed',
+      error: error.message 
+    });
+  }
+});
+
 // Public route (Login/Register)
 app.use('/api/auth', authRoutes);
 
