@@ -62,7 +62,7 @@ app.use('/api/tasks', taskRoutes);
 
 // Leaves route
 app.use('/api/leaves', leaveRoutes);
-app.use('/api/uploads', express.static('uploads'));
+// app.use('/api/uploads', express.static('uploads')); // Commented out - now using Cloudinary
 app.use('/api/requests', requestRoutes);
 
 // Payroll routes
