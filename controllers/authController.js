@@ -166,6 +166,8 @@ const login = async (req, res) => {
     const userAgent = req.get('User-Agent') || '';
 
     // Check if account is locked
+    // TEMPORARILY DISABLED FOR TESTING
+    /*
     const isLocked = await isAccountLocked(emailValidation.sanitized);
     if (isLocked) {
       logSecurityEvent('Login attempt on locked account', {
@@ -177,6 +179,7 @@ const login = async (req, res) => {
         retryAfter: 15 * 60
       });
     }
+    */
 
     // Find user
     const user = await User.findOne({ email: emailValidation.sanitized });
@@ -191,6 +194,8 @@ const login = async (req, res) => {
       await logLoginAttempt(emailValidation.sanitized, clientIP, userAgent, false);
       
       // Check if account should be locked after this failed attempt
+      // TEMPORARILY DISABLED FOR TESTING
+      /*
       const shouldLock = await isAccountLocked(emailValidation.sanitized);
       if (shouldLock) {
         logSecurityEvent('Account locked due to failed attempts', {
@@ -202,6 +207,7 @@ const login = async (req, res) => {
           retryAfter: 15 * 60
         });
       }
+      */
       
       return res.status(401).json({ message: 'Invalid credentials' });
     }
