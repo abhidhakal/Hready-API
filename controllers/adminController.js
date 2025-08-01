@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const mongoose = require('mongoose');
+const { validatePassword } = require('../utils/securityUtils');
 
 // Get admin by ID
 const getAdminById = async (req, res) => {
@@ -113,23 +114,46 @@ const uploadProfilePicture = async (req, res) => {
 
 // Change password
 const changePassword = async (req, res) => {
+  console.log('Change password request received:', {
+    body: req.body,
+    user: req.user,
+    headers: req.headers
+  });
+  
   const { currentPassword, newPassword } = req.body;
   try {
+    // Validate input
+    if (!currentPassword || !newPassword) {
+      console.log('Missing password fields:', { currentPassword: !!currentPassword, newPassword: !!newPassword });
+      return res.status(400).json({ message: 'Current password and new password are required' });
+    }
+
+    // Validate new password strength
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      console.log('Password validation failed:', passwordValidation.error);
+      return res.status(400).json({ message: passwordValidation.error });
+    }
+
     const admin = await User.findById(req.user.id);
     if (!admin || admin.role !== 'admin') {
+      console.log('Admin not found:', { userId: req.user.id, foundUser: !!admin, role: admin?.role });
       return res.status(404).json({ message: 'Admin not found' });
     }
 
     const isMatch = await admin.matchPassword(currentPassword);
     if (!isMatch) {
+      console.log('Current password mismatch for admin:', admin.email);
       return res.status(400).json({ message: 'Current password is incorrect' });
     }
 
     admin.password = newPassword;
     await admin.save();
 
+    console.log('Password changed successfully for admin:', admin.email);
     res.json({ message: 'Password changed successfully' });
   } catch (err) {
+    console.error('Change password error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

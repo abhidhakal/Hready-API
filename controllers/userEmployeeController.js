@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { validatePassword } = require('../utils/securityUtils');
 
 // Get all employees
 const getAllEmployees = async (req, res) => {
@@ -101,23 +102,46 @@ const deactivateMyAccount = async (req, res) => {
 
 // Change password
 const changePassword = async (req, res) => {
+  console.log('Change password request received:', {
+    body: req.body,
+    user: req.user,
+    headers: req.headers
+  });
+  
   const { currentPassword, newPassword } = req.body;
   try {
+    // Validate input
+    if (!currentPassword || !newPassword) {
+      console.log('Missing password fields:', { currentPassword: !!currentPassword, newPassword: !!newPassword });
+      return res.status(400).json({ message: 'Current password and new password are required' });
+    }
+
+    // Validate new password strength
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      console.log('Password validation failed:', passwordValidation.error);
+      return res.status(400).json({ message: passwordValidation.error });
+    }
+
     const user = await User.findById(req.user.id);
     if (!user || user.role !== 'employee') {
+      console.log('Employee not found:', { userId: req.user.id, foundUser: !!user, role: user?.role });
       return res.status(404).json({ message: 'Employee not found' });
     }
 
     const isMatch = await user.matchPassword(currentPassword);
     if (!isMatch) {
+      console.log('Current password mismatch for employee:', user.email);
       return res.status(400).json({ message: 'Current password is incorrect' });
     }
 
     user.password = newPassword;
     await user.save();
 
+    console.log('Password changed successfully for employee:', user.email);
     res.json({ message: 'Password changed successfully' });
   } catch (err) {
+    console.error('Change password error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

@@ -37,8 +37,8 @@ const isTokenBlacklisted = (token) => {
 
 // Check if account is locked
 const isAccountLocked = async (email) => {
-  const lockoutWindow = 15 * 60 * 1000; // 15 minutes
-  const maxAttempts = 5;
+  const lockoutWindow = 2 * 60 * 1000; // 2 minutes (reduced for testing)
+  const maxAttempts = 20; // Increased for testing
   
   const recentAttempts = await LoginAttempt.find({
     email: email.toLowerCase(),
@@ -173,8 +173,8 @@ const login = async (req, res) => {
         ip: clientIP
       });
       return res.status(423).json({ 
-        message: 'Account temporarily locked due to too many failed attempts. Please try again after 15 minutes.',
-        retryAfter: 15 * 60
+        message: 'Account temporarily locked due to too many failed attempts. Please try again after 2 minutes.',
+        retryAfter: 2 * 60
       });
     }
 
@@ -198,8 +198,8 @@ const login = async (req, res) => {
           ip: clientIP
         });
         return res.status(423).json({ 
-          message: 'Account locked due to too many failed attempts. Please try again after 15 minutes.',
-          retryAfter: 15 * 60
+          message: 'Account locked due to too many failed attempts. Please try again after 2 minutes.',
+          retryAfter: 2 * 60
         });
       }
       
